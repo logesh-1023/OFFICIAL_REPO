@@ -22,7 +22,7 @@ pipeline {
                     withCredentials([sshUserPrivateKey(credentialsId: "${EC2_SSH_CREDENTIALS}", keyFileVariable: 'SSH_KEY')]) {
                         sh '''
                             chmod 400 ${SSH_KEY}
-                            ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ec2-user@${EC2_SERVER_IP} <<EOF
+                            ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ec2-user@${EC2_SERVER_IP} << 'EOF'
                             cd ${REPO_PATH}
                             git reset --hard
                             git clean -fd

@@ -22,18 +22,20 @@ pipeline {
                     withCredentials([sshUserPrivateKey(credentialsId: "${EC2_SSH_CREDENTIALS}", keyFileVariable: 'SSH_KEY')]) {
                         sh """
                             chmod 400 ${SSH_KEY}
-                            ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ec2-user@${EC2_SERVER_IP} << 'EOF'
+                            ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ec2-user@${EC2_SERVER_IP} <<EOF
                                 cd ${REPO_PATH}
-                                if [ ! -d ".git" ]; then
-                                    echo "Git repository not found! Initializing..."
+                                if [ -d ".git" ]; then
+                                    git reset --hard
+                                    git clean -fd
+                                    git fetch origin
+                                    git checkout ${GIT_BRANCH}
+                                    git pull origin ${GIT_BRANCH}
+                                else
                                     git init
                                     git remote add origin https://github.com/logesh-1023/OFFICIAL_REPO.git
+                                    git fetch origin
+                                    git checkout ${GIT_BRANCH}
                                 fi
-                                git reset --hard
-                                git clean -fd
-                                git fetch origin
-                                git checkout ${GIT_BRANCH}
-                                git pull origin ${GIT_BRANCH}
                             EOF
                         """
                     }
@@ -47,8 +49,7 @@ pipeline {
                     withCredentials([sshUserPrivateKey(credentialsId: "${EC2_SSH_CREDENTIALS}", keyFileVariable: 'SSH_KEY')]) {
                         sh """
                             chmod 400 ${SSH_KEY}
-                            ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ec2-user@${EC2_SERVER_IP} << 'EOF'
-                                cd /etc/systemd/system
+                            ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ec2-user@${EC2_SERVER_IP} <<EOF
                                 sudo systemctl restart flask_server.service
                             EOF
                         """
